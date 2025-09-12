@@ -46,7 +46,7 @@ const Login = ({ onLogin }) => {
               <Lock size={20} />
               <span>Secure Login</span>
             </h2>
-            <p className="text-green-100 mt-2">Access your pharmacy dashboard</p>
+            <p className="text-green-100 mt-2">Pharmacist Portal Login</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
