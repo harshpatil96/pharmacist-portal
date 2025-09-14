@@ -1,33 +1,55 @@
 import React, { useState } from "react";
-import { Lock } from "lucide-react"; // clean icon
+import { Lock, Eye, EyeOff } from "lucide-react";
+import { auth } from "../context/firebase"; // adjust path if needed
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (username && password) {
-      onLogin();
-    } else {
-      alert("Please enter username and password");
+
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    try {
+      // Firebase login
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // ✅ Only Firebase registered users can login
+      if (!user) {
+        setError("You are not authorized to access this portal.");
+        return;
+      }
+
+      // (Optional) Check if email is verified
+      // if (!user.emailVerified) {
+      //   setError("Please verify your email before logging in.");
+      //   return;
+      // }
+
+      onLogin(user); // send user to parent
+    } catch (err) {
+      console.error("Login error:", err.message);
+      setError("Invalid email or password");
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-teal-50 p-6 flex items-center justify-center">
       <div className="max-w-md w-full animate-fade-in">
-
+        
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center space-x-4 mb-4">
             <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center shadow-lg bg-green-400">
-              <img
-                src="/logo.png" // replace with your logo path
-                alt="Logo"
-                className="w-full h-full object-cover object-center"
-              />
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-center" />
             </div>
             <div>
               <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-teal-700">
@@ -51,38 +73,41 @@ const Login = ({ onLogin }) => {
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             <div>
-              <label className="block mb-2 font-medium text-green-700">Username</label>
+              <label className="block mb-2 font-medium text-green-700">Email</label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
                 className="w-full border border-gray-200 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 hover:shadow-md"
               />
             </div>
 
             <div>
               <label className="block mb-2 font-medium text-green-700">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full border border-gray-200 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 hover:shadow-md"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full border border-gray-200 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 hover:shadow-md pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-green-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
-            {/* Remember & Forgot */}
-            <div className="flex items-center justify-between text-sm text-green-700">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={() => setRememberMe(!rememberMe)}
-                  className="form-checkbox h-4 w-4 text-green-600 rounded focus:ring-green-400"
-                />
-                <span>Remember Me</span>
-              </label>
+            {/* Error message */}
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+
+            {/* Forgot Password */}
+            <div className="flex justify-end text-sm text-green-700">
               <a href="#" className="hover:underline font-medium">
                 Forgot Password?
               </a>

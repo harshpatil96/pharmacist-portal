@@ -13,6 +13,8 @@ import {
   Package,
   DollarSign
 } from "lucide-react";
+import jsPDF from "jspdf";   // 📌 import jsPDF
+import "jspdf-autotable";
 
 const OverviewPanel = () => {
   const [time, setTime] = useState(new Date());
@@ -40,10 +42,35 @@ const OverviewPanel = () => {
 
   const prescriptionTrend = [120, 145, 132, 167, 189, 210, 195, 220, 242, 256, 278, 300];
 
+  const handleGenerateReport = () => {
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(18);
+    doc.text("Pharmacy Dashboard Report", 14, 20);
+
+    // Date & Time
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    // Stats
+    doc.setFontSize(14);
+    doc.text("Summary:", 14, 50);
+
+    doc.setFontSize(12);
+    doc.text(`Total Patients: ${stats.totalPatients}`, 14, 65);
+    doc.text(`Monthly Revenue: ₹${stats.monthlyRevenue.toLocaleString("en-IN")}`, 14, 75);
+    doc.text(`Active Prescriptions: ${stats.activePrescriptions}`, 14, 85);
+    doc.text(`Pending Tasks: ${stats.pendingTasks}`, 14, 95);
+
+    // Save PDF
+    doc.save("dashboard-report.pdf");
+  };
+
   return (
     <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
       {/* Header Section */}
-      <div className="mb-8 flex justify-between items-center">
+       <div className="mb-8 flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 mb-2 tracking-tight">
             Dashboard Overview
@@ -58,7 +85,11 @@ const OverviewPanel = () => {
           <div className="h-1 w-24 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full mt-2"></div>
         </div>
         <div className="flex space-x-4">
-          <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center">
+          {/* 📌 Updated button with handler */}
+          <button
+            onClick={handleGenerateReport}
+            className="px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center"
+          >
             <Activity className="w-4 h-4 mr-2" />
             Generate Report
           </button>
@@ -68,6 +99,7 @@ const OverviewPanel = () => {
           </button>
         </div>
       </div>
+
 
       {/* Main Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
